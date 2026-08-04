@@ -4,7 +4,7 @@ Code repository for the manuscript:
 
 **Early laboratory trajectories reveal externally assignable ICU recovery phenotypes after cardiac surgery**
 
-This repository contains public analysis definitions and documentation for the early ICU recovery phenotype project. It does not contain patient-level data, aggregate figure data, cohort-construction code, or raw-data preprocessing pipelines.
+This repository contains public analysis definitions and documentation for the early ICU recovery phenotype project.
 
 ## Repository structure
 
@@ -48,13 +48,6 @@ from early_icu_recovery_phenotypes import (
 - `MIMIC-IV` denotes the US critical-care robustness dataset.
 - The discovery cohort denotes the Chinese cardiac-surgery ICU discovery dataset.
 
-## Data and preprocessing code
-
-No clinical data are included in this repository. This includes patient-level records, aggregate figure tables, intermediate matrices, model-input tensors, local database extracts, and any cohort-construction or raw-data preprocessing code.
-
-Access to the underlying clinical datasets should follow the corresponding database access rules, data-use agreements, and institutional approvals.
-
 ## Citation
 
 If you use this repository, please cite the manuscript and this GitHub repository. A `CITATION.cff` file is included for citation managers.
-
