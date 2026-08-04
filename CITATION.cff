@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: "Early ICU recovery phenotypes after cardiac surgery"
+message: "If you use this repository, please cite the associated manuscript."
+type: software
+authors:
+  - family-names: Wang
+    given-names: Yifan
+repository-code: "https://github.com/YifanWang-China/early-icu-recovery-phenotypes-code"
+license: MIT
+date-released: 2026-08-04
+
