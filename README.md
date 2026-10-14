@@ -1,53 +1,54 @@
-# Early ICU recovery phenotypes after cardiac surgery
+# Early ICU recovery phenotypes
 
-Code repository for the manuscript:
+Analysis code for *Early laboratory trajectories reveal externally assignable ICU recovery phenotypes after cardiac surgery*.
 
-**Early laboratory trajectories reveal externally assignable ICU recovery phenotypes after cardiac surgery**
+The scripts cover laboratory assay filtering, trajectory summaries, PCA/Gaussian mixture discovery, transformer-based assignment, chronological validation, external cohort evaluation and sensitivity analyses. The primary discovery cohort contains 1,025 admissions; the separate chronological analysis fits the pipeline on the first 820 admissions and evaluates the remaining 205.
 
-This repository contains public analysis definitions and documentation for the early ICU recovery phenotype project.
+## Setup
 
-## Repository structure
-
-```text
-src/early_icu_recovery_phenotypes/      Public constants for channels, summaries and phenotype labels
-docs_assignment_model_card.md           Model-card draft for the fixed-label phenotype-assignment model
-scripts/audit_release.py                Repository audit utility
-```
-
-## Installation
+Python 3.13 was used for the analysis. Install the dependencies in a virtual environment:
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -e .
+python -m pip install -r requirements.txt
 ```
 
-## Public definitions
+PyTorch uses CUDA when available and otherwise runs on the CPU. Results may vary slightly across hardware and library builds.
 
-The package exposes constants describing the manuscript-level analysis representation:
+## Inputs
 
-- 16 laboratory channels used in phenotype discovery;
-- 9 trajectory summary operators;
-- 8 shared channels used for fixed-label external assignment;
-- S0/S1/S2 phenotype names;
-- high-level assignment-model metadata.
+Place the following files in `<workspace>/inputs/`. Clinical data, fitted models and generated results are not included in this repository. Running the analysis requires authorized access to the source data and the prepared cohort extracts.
 
-Example:
+| File | Contents |
+| --- | --- |
+| `discovery_features.csv` | Admission metadata and the original 16-channel trajectory summaries used to define cohort membership. |
+| `operative_records.tsv` | Source surgical records, tab-separated, GB18030 encoding. |
+| `laboratory_records.csv` | Source laboratory records, GB18030 encoding; zero-based columns 1, 4, 5 and 6 contain admission identifier, measurement time, assay name and value. |
+| `dataset2_metadata.csv`, `dataset2_grid_gate4.npz` | INSPIRE admission metadata and aligned laboratory grids. |
+| `dataset3_metadata.csv`, `dataset3_grid_gate4.npz` | MIMIC-IV admission metadata and aligned laboratory grids. |
 
-```python
-from early_icu_recovery_phenotypes import (
-    DISCOVERY_CHANNELS,
-    SHARED_ASSIGNMENT_CHANNELS,
-    TRAJECTORY_SUMMARIES,
-)
+Each NPZ contains `values` and `masks` arrays of shape `(admissions, 13, 8)`, in the same row order as its metadata. The grid spans 0–6 hours at 30-minute intervals. Channel order is lactate, pH, PO2, PCO2, hemoglobin, potassium, sodium and glucose. Missing values use NaN; observation masks use 0/1.
+
+Metadata includes `label72`, `first_icu_hours` and `bg_timepoints_0_6h`. Discovery records also include `patient_id`, `surgery_name`, `ef`, `nyha`, `outcome` and the nine summaries (`count`, `first`, `last`, `min`, `max`, `mean`, `std`, `delta`, `slope`) for each channel in `BG_CHANNELS`. MIMIC-IV metadata includes `subject_id`, `service_aligned` and `procdate_aligned`. The operative extract retains the original column names: `住院号`, `手术结束时间`, `入院日期`, `出院日期` and `重症监护室相关记录信息`.
+
+## Run
+
+```bash
+python run.py --workspace /path/to/workspace --check-inputs
+python run.py --workspace /path/to/workspace
 ```
 
-## Dataset naming
+The first command checks file presence. The second runs these stages in order:
 
-- `INSPIRE` denotes the Korean perioperative external validation dataset.
-- `MIMIC-IV` denotes the US critical-care robustness dataset.
-- The discovery cohort denotes the Chinese cardiac-surgery ICU discovery dataset.
+1. `audit`: extract the eligible cohort's early laboratory records.
+2. `analysis`: fit discovery and assignment models and evaluate local and external cohorts.
+3. `checks`: run clinical-context, endpoint, eligibility and time-anchor analyses.
 
-## Citation
+Use `--stage audit`, `--stage analysis` or `--stage checks` to run a stage separately. Outputs are written to `<workspace>/outputs/`. Dated script names retain the analysis version; shared helper modules contain the definitions used by this pipeline.
 
-If you use this repository, please cite the manuscript and this GitHub repository. A `CITATION.cff` file is included for citation managers.
+```bash
+python -m unittest discover -s tests
+```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
